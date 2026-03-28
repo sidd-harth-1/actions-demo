@@ -1,36 +1,36 @@
-name: Deploy site to Pages
+name: Deploy Block Buster to GitHub Pages
 
 on:
+  # Runs on pushes targeting the default branch
   push:
-    branches:
-      - main # Triggers the workflow on pushes to the main branch
-  workflow_dispatch: # Allows manual triggering from the Actions tab
+    branches: ["main"]
 
-# Sets permissions of the GITHUB_TOKEN to allow the deployment
-permissions: write-all
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout your repository
-        uses: actions/checkout@v4
-      # Add steps here to build your site (e.g., run npm install, npm run build)
-      # ...
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4 # Uploads the build output as an artifact
-        with:
-          # Directory containing your build output (e.g., '_site', 'build', 'dist')
-          path: '.' 
-    
+  # Single job called deploy
   deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build # Ensures the build job completes first
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire repository
+          path: '.'
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4 # The action to deploy the uploaded artifact
+        uses: actions/deploy-pages@v4
