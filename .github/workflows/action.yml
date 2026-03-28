@@ -1,31 +1,45 @@
-# GitHub Actions workflow to deploy the Block Buster 2026 website to GitHub Pages
-name: Deploy to GitHub Pages
+name: Deploy site to Pages
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push events for the main branch
   push:
-    branches: [ "main" ]
+    branches:
+      - main # Triggers the workflow on pushes to the main branch
+  workflow_dispatch: # Allows manual triggering from the Actions tab
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+# Sets permissions of the GITHUB_TOKEN to allow the deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write # required by actions/deploy-pages@v4
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# Allow only one concurrent deployment
+concurrency:
+  group: "github-pages"
+  cancel-in-progress: true
+
 jobs:
-  # This workflow contains a single job called "deploy"
-  deploy:
-    # The type of runner that the job will run on
+  build:
     runs-on: ubuntu-latest
-    # This allows the action to push to the gh-pages branch
-    permissions: 
-      contents: write
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
-
-      # Deploys the website to GitHub Pages
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Checkout your repository
+        uses: actions/checkout@v4
+      # Add steps here to build your site (e.g., run npm install, npm run build)
+      # ...
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v4 # Uploads the build output as an artifact
         with:
-          folder: .
+          # Directory containing your build output (e.g., '_site', 'build', 'dist')
+          path: '.' 
+    
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build # Ensures the build job completes first
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4 # The action to deploy the uploaded artifact
